@@ -1,0 +1,17 @@
+/*
+package com.tag.biometric.ifService.config;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequestWrapper;
+import java.io.IOException;
+
+
+public abstract class RequestBodyWrapper extends HttpServletRequestWrapper {
+
+    public RequestBodyWrapper(HttpServletRequest request) {
+        super(request);
+    }
+
+    public abstract String getRequestBody() throws IOException;
+}
+*/

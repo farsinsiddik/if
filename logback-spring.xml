@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyrights (c) 2022. Tag Biometric
+  ~ All rights reserved with Tag Biometrics.
+  -->
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    <include resource="org/springframework/boot/logging/logback/base.xml"/>
+    <springProperty scope="context" name="application" source="spring.application.name" defaultValue="if-service"/>
+    <springProperty name="logstashURL" source="logstash.url" defaultValue="localhost:5000"/>
+    <springProperty name="logstashEnabled" source="logstash.show-logs" defaultValue="false"/>
+    <statusListener class="ch.qos.logback.core.status.NopStatusListener" />
+
+    <property name="LOG_FILE" value="${BUILD_FOLDER:-build}/${application}"/>
+    <property name="CONSOLE_LOG_PATTERN"
+              value="%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(${LOG_LEVEL_PATTERN:-%5p}) %clr(${PID:- }){magenta} %clr(---){faint} %clr([%15.15t]){faint} %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}}"/>
+
+    <!-- Console Appender -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>INFO</level>
+        </filter>
+        <encoder>
+            <pattern>${CONSOLE_LOG_PATTERN}</pattern>
+            <charset>utf8</charset>
+        </encoder>
+    </appender>
+    <if condition='isDefined("logstashEnabled") &amp;&amp; property("logstashEnabled").equals("true")'>
+        <then>
+            <appender name="LOGSTASH" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+                <destination>${logstashURL}</destination>
+                <encoder charset="UTF-8" class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+                    <providers>
+                        <timestamp>
+                            <timeZone>UTC</timeZone>
+                        </timestamp>
+                        <pattern>
+                            <pattern>
+                                { "logLevel": "%level", "serviceName": "${application:-}", "pid": "${PID:-}", "thread":
+                                "%thread",
+                                "class": "%logger{40}", "rest": "%message" }
+                            </pattern>
+                        </pattern>
+                    </providers>
+                </encoder>
+
+                <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+                    <includeCallerData>true</includeCallerData>
+                </encoder>
+            </appender>
+        </then>
+    </if>
+
+    <!-- Root Logger -->
+    <root level="INFO">
+        <if condition='isDefined("logstashEnabled") &amp;&amp; property("logstashEnabled").equals("true")'>
+            <then>
+                <appender-ref ref="LOGSTASH"/>
+            </then>
+        </if>
+<!--        <appender-ref ref="CONSOLE"/>-->
+        <appender-ref ref="FILE"/>
+    </root>
+</configuration>

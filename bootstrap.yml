@@ -1,0 +1,11 @@
+spring:
+  profiles:
+    active: ${PROFILE:default}
+  application:
+    name: if-service
+  cloud:
+    config:
+      uri: ${CONFIG_SERVER_URL:http://localhost:8888/}
+      fail-fast: true
+      password: 123
+      username: user
